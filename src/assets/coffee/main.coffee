@@ -1,0 +1,1 @@
+alert "Yep, gulp is compiling your coffee script!"
