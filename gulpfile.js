@@ -20,15 +20,15 @@ var paths = {
         dest: basePaths.dest + 'css/min/'
     },
     coffee: {
-         src: basePaths.src + 'coffee/',
-         dest: basePaths.dest + 'js/min/'
+        src: basePaths.src + 'coffee/',
+        dest: basePaths.dest + 'js/min/'
     }
 };
 
 // Project Source Code
 var appFiles = {
     styles: paths.styles.src + '**/main.scss',
-    scripts: [paths.scripts.src + '/scripts.js'],
+    scripts: [paths.scripts.src + '**/*.js'],
     coffee: [paths.coffee.src + '**/*.coffee']
 
 };
@@ -36,7 +36,10 @@ var appFiles = {
 // Plugin Files usually from Bower
 var vendorFiles = {
     styles: '',
-    scripts: [basePaths.bower + 'fullpage.js/jquery.fullPage.min.js']
+    scripts: [
+        basePaths.bower + 'fullpage.js/vendors/jquery.slimscroll.min.js',
+        basePaths.bower + 'fullpage.js/jquery.fullPage.min.js'
+    ]
 };
 
 /*
@@ -46,7 +49,7 @@ var gulp = require('gulp');
 var es = require('event-stream');
 var gutil = require('gulp-util');
 var browserSync = require('browser-sync');
-var reload      = browserSync.reload;
+var reload = browserSync.reload;
 var plugins = require("gulp-load-plugins")({
     pattern: ['gulp-*', 'gulp.*'],
     replaceString: /\bgulp[\-.]/
@@ -54,7 +57,7 @@ var plugins = require("gulp-load-plugins")({
 
 // Set up liveReload server
 // browser-sync task for starting the server.
-gulp.task('browser-sync', function() {
+gulp.task('browser-sync', function () {
     browserSync({
         server: {
             baseDir: "./public/"
@@ -94,34 +97,43 @@ gulp.task('css', function () {
         .pipe(isProduction ? plugins.cssmin() : gutil.noop())
         .pipe(plugins.size())
         .pipe(gulp.dest(paths.styles.dest))
-        .pipe(reload({stream:true}));
+        .pipe(reload({stream: true}));
 });
 
-gulp.task('scripts', function () {
-    var allScripts = gulp.src(vendorFiles.scripts.concat(appFiles.scripts))
-    var coffeeFiles = gulp.src(appFiles.coffee)
+gulp.task('coffee', function(){
+
+    gulp.src(appFiles.coffee)
         .pipe(plugins.coffee())
         .on('error', function (err) {
             new gutil.PluginError('Coffee', err, {showStack: true});
-        });
-    return es.concat(allScripts, coffeeFiles)
-        .pipe(plugins.concat('app.js'))
-        .pipe(isProduction ? plugins.uglify() : gutil.noop())
-        .pipe(isProduction ? plugins.stripDebug() : gutil.noop())
-        .pipe(plugins.size())
-        .pipe(gulp.dest(paths.scripts.dest));
+        })
+        .pipe(gulp.dest(paths.scripts.src));
 
 });
 
-gulp.task('watch', ['css', 'scripts', 'browser-sync'], function () {
+
+    gulp.task('scripts', function(){
+
+        gulp.src(vendorFiles.scripts.concat(appFiles.scripts))
+            .pipe(plugins.concat('app.js'))
+            .pipe(gulp.dest(paths.scripts.dest))
+            .pipe(isProduction ? plugins.uglify() : gutil.noop())
+            .pipe(isProduction ? plugins.stripDebug() : gutil.noop())
+            .pipe(plugins.size())
+            .pipe(gulp.dest(paths.scripts.dest));
+
+    });
+
+
+gulp.task('watch', ['css', 'scripts', 'coffee', 'browser-sync'], function () {
     gulp.watch(appFiles.styles, ['css']).on('change', function (evt) {
         changeEvent(evt);
     });
     gulp.watch(paths.scripts.src + '*.js', ['scripts', browserSync.reload]).on('change', function (evt) {
         changeEvent(evt);
     });
-    gulp.watch(paths.coffee.src + '*.coffee', ['scripts', browserSync.reload]).on('change', function (evt) {
+    gulp.watch(paths.coffee.src + '*.coffee', ['coffee', browserSync.reload]).on('change', function (evt) {
         changeEvent(evt);
     });
 });
-gulp.task('default', ['css', 'scripts', 'browser-sync']);
+gulp.task('default', ['css', 'scripts', 'coffee', 'browser-sync']);
