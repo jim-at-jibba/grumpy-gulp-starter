@@ -2,8 +2,8 @@
  * Created by jbest on 2/12/2015.
  */
 var basePaths = {
-    src: 'src/assets/',
-    dest: 'public/assets/',
+    src: 'src/',
+    dest: 'public/',
     bower: 'bower_components/',
     html: 'public'
 };
@@ -13,19 +13,16 @@ var paths = {
         dest: basePaths.dest + 'images/min/'
     },
     scripts: {
-        src: basePaths.src + 'js/',
-        dest: basePaths.dest + 'js/min/'
+        src: basePaths.src + 'assets/js/',
+        dest: basePaths.dest + 'assets/js/'
     },
     styles: {
-        src: basePaths.src + 'sass/',
-        dest: basePaths.dest + 'css/min/'
+        src: basePaths.src + 'assets.sass/',
+        dest: basePaths.dest + 'assets/css/'
     },
     coffee: {
-        src: basePaths.src + 'coffee/',
-        dest: basePaths.dest + 'js/min/'
-    },
-    html: {
-        src: basePaths.html
+        src: basePaths.src + 'assets/coffee/',
+        dest: basePaths.dest + 'assets/js/'
     }
 };
 
@@ -34,7 +31,7 @@ var appFiles = {
     styles: paths.styles.src + '**/main.scss',
     scripts: [paths.scripts.src + '**/*.js'],
     coffee: [paths.coffee.src + '**/*.coffee'],
-    html: [paths.html.src + '**/*.html']
+    html: [basePaths.html + '/**/*.html']
 
 };
 
