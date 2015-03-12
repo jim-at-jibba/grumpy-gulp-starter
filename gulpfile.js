@@ -1,6 +1,10 @@
 /**
  * Created by jbest on 2/12/2015.
  */
+
+//-----------------------------------------------------------------------------
+// Paths
+//-----------------------------------------------------------------------------
 var basePaths = {
     src: 'src/',
     dest: 'public/',
@@ -9,15 +13,15 @@ var basePaths = {
 };
 var paths = {
     images: {
-        src: basePaths.src + 'images/',
-        dest: basePaths.dest + 'images/min/'
+        src: basePaths.src + 'assets/images/*',
+        dest: basePaths.dest + 'img/'
     },
     scripts: {
         src: basePaths.src + 'assets/js/',
         dest: basePaths.dest + 'assets/js/'
     },
     styles: {
-        src: basePaths.src + 'assets.sass/',
+        src: basePaths.src + 'assets/sass/',
         dest: basePaths.dest + 'assets/css/'
     },
     coffee: {
@@ -44,12 +48,15 @@ var vendorFiles = {
     ]
 };
 
-/*
- Let the magic begin
- */
+
+//-----------------------------------------------------------------------------
+// Let the magic begin
+//-----------------------------------------------------------------------------
+
 var gulp = require('gulp');
 var es = require('event-stream');
 var gutil = require('gulp-util');
+var pngquant = require('imagemin-pngquant');
 var browserSync = require('browser-sync');
 var reload = browserSync.reload;
 var plugins = require("gulp-load-plugins")({
@@ -57,8 +64,12 @@ var plugins = require("gulp-load-plugins")({
     replaceString: /\bgulp[\-.]/
 });
 
+
+
+//-----------------------------------------------------------------------------
 // Set up liveReload server
-// browser-sync task for starting the server.
+//-----------------------------------------------------------------------------
+
 gulp.task('browser-sync', function () {
     browserSync({
         server: {
@@ -67,7 +78,11 @@ gulp.task('browser-sync', function () {
     });
 });
 
+
+//-----------------------------------------------------------------------------
 // Allows gulp --dev to be run for a more verbose output
+//-----------------------------------------------------------------------------
+
 var isProduction = true;
 var sassStyle = 'compressed';
 var sourceMap = false;
@@ -80,6 +95,13 @@ if (gutil.env.dev === true) {
 var changeEvent = function (evt) {
     gutil.log('File', gutil.colors.cyan(evt.path.replace(new RegExp('/.*(?=/' + basePaths.src + ')/'), '')), 'was', gutil.colors.magenta(evt.type));
 };
+
+
+
+//-----------------------------------------------------------------------------
+// Task : Styles
+//-----------------------------------------------------------------------------
+
 gulp.task('css', function () {
     var sassFiles = gulp.src(appFiles.styles)
         .pipe(plugins.sass(
@@ -102,6 +124,11 @@ gulp.task('css', function () {
         .pipe(reload({stream: true}));
 });
 
+
+//-----------------------------------------------------------------------------
+// Task : JS/Coffee
+//-----------------------------------------------------------------------------
+
 gulp.task('coffee', function(){
 
     gulp.src(appFiles.coffee)
@@ -114,20 +141,45 @@ gulp.task('coffee', function(){
 });
 
 
-    gulp.task('scripts', function(){
+gulp.task('scripts', function(){
 
-        gulp.src(vendorFiles.scripts.concat(appFiles.scripts))
-            .pipe(plugins.concat('app.js'))
-            .pipe(gulp.dest(paths.scripts.dest))
-            .pipe(isProduction ? plugins.uglify() : gutil.noop())
-            .pipe(isProduction ? plugins.stripDebug() : gutil.noop())
-            .pipe(plugins.size())
-            .pipe(gulp.dest(paths.scripts.dest));
+    gulp.src(vendorFiles.scripts.concat(appFiles.scripts))
+        .pipe(plugins.concat('app.js'))
+        .pipe(gulp.dest(paths.scripts.dest))
+        .pipe(isProduction ? plugins.uglify() : gutil.noop())
+        .pipe(isProduction ? plugins.stripDebug() : gutil.noop())
+        .pipe(plugins.size())
+        .pipe(gulp.dest(paths.scripts.dest));
 
-    });
+});
 
 
-gulp.task('watch', ['css', 'scripts', 'coffee', 'browser-sync'], function () {
+
+//-----------------------------------------------------------------------------
+// Task : Images
+//-----------------------------------------------------------------------------
+
+gulp.task('images', function(){
+
+    gulp.src(paths.images.src)
+        .pipe(plugins.imagemin({
+            progressive: true,
+            svgoPlugins: [{removeViewBox: false}],
+            use: [pngquant()]
+            }))
+        .on('error', function (err) {
+            new gutil.PluginError('Imagemin', err, {showStack: true});
+        })
+        .pipe(gulp.dest(paths.images.dest));
+
+});
+
+
+//-----------------------------------------------------------------------------
+// Task : Watch
+//-----------------------------------------------------------------------------
+
+gulp.task('watch', ['css', 'scripts', 'coffee', 'images', 'browser-sync'], function () {
     gulp.watch(appFiles.styles, ['css']).on('change', function (evt) {
         changeEvent(evt);
     });
@@ -139,4 +191,10 @@ gulp.task('watch', ['css', 'scripts', 'coffee', 'browser-sync'], function () {
     });
     gulp.watch(appFiles.html).on('change', browserSync.reload);
 });
-gulp.task('default', ['css', 'scripts', 'coffee', 'browser-sync']);
+
+
+//-----------------------------------------------------------------------------
+// Task : Default
+//-----------------------------------------------------------------------------
+
+gulp.task('default', ['css', 'scripts', 'coffee', 'images', 'browser-sync']);
