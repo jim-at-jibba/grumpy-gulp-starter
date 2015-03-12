@@ -4,7 +4,8 @@
 var basePaths = {
     src: 'src/assets/',
     dest: 'public/assets/',
-    bower: 'bower_components/'
+    bower: 'bower_components/',
+    html: 'public'
 };
 var paths = {
     images: {
@@ -22,6 +23,9 @@ var paths = {
     coffee: {
         src: basePaths.src + 'coffee/',
         dest: basePaths.dest + 'js/min/'
+    },
+    html: {
+        src: basePaths.html
     }
 };
 
@@ -29,7 +33,8 @@ var paths = {
 var appFiles = {
     styles: paths.styles.src + '**/main.scss',
     scripts: [paths.scripts.src + '**/*.js'],
-    coffee: [paths.coffee.src + '**/*.coffee']
+    coffee: [paths.coffee.src + '**/*.coffee'],
+    html: [paths.html.src + '**/*.html']
 
 };
 
@@ -135,5 +140,6 @@ gulp.task('watch', ['css', 'scripts', 'coffee', 'browser-sync'], function () {
     gulp.watch(paths.coffee.src + '*.coffee', ['coffee', browserSync.reload]).on('change', function (evt) {
         changeEvent(evt);
     });
+    gulp.watch(appFiles.html).on('change', browserSync.reload);
 });
 gulp.task('default', ['css', 'scripts', 'coffee', 'browser-sync']);
