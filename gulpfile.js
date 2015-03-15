@@ -183,7 +183,7 @@ gulp.task('watch', ['css', 'scripts', 'coffee', 'images', 'browser-sync'], funct
     gulp.watch(appFiles.styles, ['css']).on('change', function (evt) {
         changeEvent(evt);
     });
-    gulp.watch(paths.scripts.src + '*.js', ['scripts', browserSync.reload]).on('change', function (evt) {
+    gulp.watch(appFiles.scripts, ['scripts']).on('change', function (evt) {
         changeEvent(evt);
     });
     gulp.watch(paths.coffee.src + '*.coffee', ['coffee', browserSync.reload]).on('change', function (evt) {
